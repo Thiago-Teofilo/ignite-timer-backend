@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable } from '@nestjs/common';
 import { Prisma, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -6,12 +7,33 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class UsersService {
   constructor(private prismaService: PrismaService) {}
 
-  async findOneByEmail(email: string): Promise<User | undefined> {
-    return await this.prismaService.user.findFirst({
+  async findOne(username: string): Promise<User | undefined> {
+    return this.prismaService.user.findFirst({
+      where: {
+        name: username,
+      },
+    });
+  }
+  async findOneByEmail(email: string) {
+    const user = await this.prismaService.user.findFirst({
       where: {
         email,
       },
+      include: {
+        Cycle: true,
+      },
     });
+
+    if (user) {
+      const { Cycle, ...userWithoutCycle } = user;
+
+      return {
+        ...userWithoutCycle,
+        cycles: Cycle,
+      };
+    }
+
+    return user;
   }
 
   async create(payload: Prisma.UserCreateInput) {
@@ -21,13 +43,19 @@ export class UsersService {
   }
 
   async getProfile(userId: string) {
-    return await this.prismaService.user.findUnique({
-      where: {
-        id: userId,
-      },
-      include: {
-        Cycle: true,
-      },
-    });
+    const { Cycle, passwordHash, ...user } =
+      await this.prismaService.user.findUnique({
+        where: {
+          id: userId,
+        },
+        include: {
+          Cycle: true,
+        },
+      });
+
+    return {
+      ...user,
+      cycles: Cycle,
+    };
   }
 }

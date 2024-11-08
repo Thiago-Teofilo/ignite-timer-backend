@@ -2,6 +2,9 @@ import { IsDate, IsNumber, IsString } from 'class-validator';
 
 export class CreateCycleDto {
   @IsString()
+  id: string;
+
+  @IsString()
   task: string;
 
   @IsNumber()

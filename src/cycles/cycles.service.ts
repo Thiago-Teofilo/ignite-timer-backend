@@ -67,4 +67,21 @@ export class CyclesService {
       },
     });
   }
+
+  async deleteCycle(payload: { userId: string; cycleId: string }) {
+    const cycle = await this.prismaService.cycle.findUnique({
+      where: {
+        id: payload.cycleId,
+        userId: payload.userId,
+      },
+    });
+
+    if (!cycle) {
+      throw new NotFoundException('CYCLE_NOT_FOUND');
+    }
+
+    return await this.prismaService.cycle.delete({
+      where: cycle,
+    });
+  }
 }

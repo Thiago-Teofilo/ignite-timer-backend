@@ -5,10 +5,13 @@ import { UsersService } from 'src/users/users.service';
 import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { JWT_SECRET_KEY } from 'src/_core/utils/constants';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
   imports: [
     PrismaModule,
+    PassportModule,
     JwtModule.register({
       global: true,
       secret: JWT_SECRET_KEY,
@@ -16,6 +19,6 @@ import { JWT_SECRET_KEY } from 'src/_core/utils/constants';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UsersService],
+  providers: [AuthService, UsersService, JwtStrategy],
 })
 export class AuthModule {}

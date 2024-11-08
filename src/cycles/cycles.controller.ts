@@ -1,45 +1,62 @@
 import {
   Body,
   Controller,
+  Delete,
+  Param,
   Patch,
   Post,
-  Request,
   UseGuards,
 } from '@nestjs/common';
 import { CyclesService } from './cycles.service';
-import { AuthGuard } from 'src/auth/auth.guard';
 import { CreateCycleDto } from './dto/request/create-cycle.dto';
 import { InterruptCycleDto } from './dto/request/interrupt-cycle.dto';
 import { FinishCycleDto } from './dto/request/finish-cycle.dto copy';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { UserId } from 'src/_core/utils/decorators';
 
 @Controller('cycles')
 export class CyclesController {
   constructor(private cyclesService: CyclesService) {}
 
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post()
-  async createCycle(@Request() req, @Body() body: CreateCycleDto) {
+  async createCycle(@UserId() userId: string, @Body() body: CreateCycleDto) {
     return this.cyclesService.createCycle({
       ...body,
-      userId: req.user.sub as string,
+      userId,
     });
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Patch('interrupt')
-  async interruptCycle(@Request() req, @Body() body: InterruptCycleDto) {
+  async interruptCycle(
+    @UserId() userId: string,
+    @Body() body: InterruptCycleDto,
+  ) {
     return this.cyclesService.interruptCycle({
       ...body,
-      userId: req.user.sub as string,
+      userId,
     });
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Patch('finish')
-  async finishCycle(@Request() req, @Body() body: FinishCycleDto) {
+  async finishCycle(@UserId() userId: string, @Body() body: FinishCycleDto) {
     return this.cyclesService.finishCycle({
       ...body,
-      userId: req.user.sub as string,
+      userId,
+    });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':cycleId')
+  async deleteCycle(
+    @UserId() userId: string,
+    @Param() params: { cycleId: string },
+  ) {
+    return this.cyclesService.deleteCycle({
+      userId,
+      cycleId: params.cycleId,
     });
   }
 }

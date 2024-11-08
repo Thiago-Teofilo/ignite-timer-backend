@@ -8,7 +8,6 @@ import { UsersService } from 'src/users/users.service';
 import { RegisterUserDto } from './dto/request/register.dto';
 import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from './dto/request/login.dto';
-import { User } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -16,15 +15,6 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
   ) {}
-
-  //   async validateUser(email: string, pass: string): Promise<any> {
-  //     const user = await this.usersService.findOne(username);
-  //     if (user && user.password === pass) {
-  //       const { password, ...result } = user;
-  //       return result;
-  //     }
-  //     return null;
-  //   }
 
   async register(payload: RegisterUserDto) {
     const userWithSameEmail = await this.usersService.findOneByEmail(
@@ -44,32 +34,40 @@ export class AuthService {
     return {
       access_token: await this.jwtService.signAsync({
         sub: user.id,
-        email: user.email,
+        username: user.name,
       }),
+      user: await this.getProfile(user.id),
     };
   }
 
-  async logIn(payload: LoginUserDto) {
-    const user: User = await this.usersService.findOneByEmail(payload.email);
+  async authenticate(payload: LoginUserDto) {
+    const { passwordHash, ...user } = await this.usersService.findOneByEmail(
+      payload.email,
+    );
 
     if (!user) {
-      throw new BadRequestException();
+      throw new BadRequestException('INVALID_CREDENTIALS');
     }
 
     const isPasswordMatch = await bcrypt.compare(
       payload.password,
-      user.passwordHash,
+      passwordHash,
     );
 
     if (!isPasswordMatch) {
-      throw new BadRequestException();
+      throw new BadRequestException('INVALID_CREDENTIALS');
     }
 
     return {
       access_token: await this.jwtService.signAsync({
         sub: user.id,
-        email: user.email,
+        username: user.name,
       }),
+      user: await this.getProfile(user.id),
     };
+  }
+
+  async getProfile(userId: string) {
+    return await this.usersService.getProfile(userId);
   }
 }
