@@ -11,8 +11,8 @@ import { CyclesService } from './cycles.service';
 import { CreateCycleDto } from './dto/request/create-cycle.dto';
 import { InterruptCycleDto } from './dto/request/interrupt-cycle.dto';
 import { FinishCycleDto } from './dto/request/finish-cycle.dto copy';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { UserId } from 'src/_core/utils/decorators';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UserId } from '../_core/utils/decorators';
 
 @Controller('cycles')
 export class CyclesController {
